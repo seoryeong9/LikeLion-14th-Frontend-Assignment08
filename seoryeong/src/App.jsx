@@ -1,14 +1,26 @@
-import useStore from "./store/store";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 export default function App() {
   const [input, setInput] = useState("");
-  const { movies, setQuery, searchMovies } = useStore();
+  const [query, setQuery] = useState("");
 
-  const handleSearch = async () => {
+  const { data: movies = [], isLoading } = useQuery({
+    queryKey: ["movies", query],
+    queryFn: () =>
+      fetch(
+        `https://api.themoviedb.org/3/search/movie?query=${query}&api_key=${
+          import.meta.env.VITE_TMDB_API_KEY
+        }`
+      ).then((res) => res.json()),
+    enabled: query !== "",
+  });
+
+  const handleSearch = () => {
     setQuery(input);
-    await searchMovies();
   };
+
+  if (isLoading) return <p>로딩중...</p>;
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-white">
